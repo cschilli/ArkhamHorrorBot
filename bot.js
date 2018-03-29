@@ -5,7 +5,7 @@ var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 var xmlHttp = new XMLHttpRequest();
 var cardFoundCounter;
 var cleanedArray;
-var maximum = 1250;
+var maximum = 358;
 var minimum = 1;
 var response;
 var jsonResponse;
@@ -58,13 +58,23 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         }
 
         function getCards(){
-            xmlHttp.open("GET", "https://netrunnerdb.com/api/2.0/public/cards", false);
+            xmlHttp.open("GET", "https://arkhamdb.com/api/public/cards/", false);
             xmlHttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
             xmlHttp.send();
             jsonResponse = JSON.parse(xmlHttp.responseText);
             return jsonResponse;
         }
 
+        function findCardWithCode(cardCode){
+            response = getCards();
+            var chosenCard;
+            for (var i = 0; i < response.length; i++){
+                if (response[i].code == cardCode){
+                    chosenCard = response[i];
+                }
+            }
+            return chosenCard;
+        }
 
         function findCard(args, cleanArr){
             var foundCard;
@@ -82,6 +92,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 }
             }
             return foundCard;
+        }
+
+        function buildUrl(response){
+            if (response.imagesrc != null){
+
+            }
         }
 
         switch(cmd) {
@@ -106,16 +122,21 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
             case 'random':
                 response = getCards();
-
                 var randomNumber = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
-
-                if (!cleanedArray){
-                    cleanedArray = cleanCardArray(response.data);
+                var cardToChoose = response[randomNumber];
+                var urlAppend;
+                if (cardToChoose.imagesrc != null){
+                    urlAppend = cardToChoose.imagesrc;
                 }
+                else{
+                    urlAppend = "unavailable";
+                }
+
+
 
                 bot.sendMessage({
                     to: channelID,
-                    message: 'https://netrunnerdb.com/card_image/' + cleanedArray[randomNumber].code + '.png'
+                    message: 'https://arkhamdb.com' + urlAppend
                 })
                 break;
             case 'card':
@@ -134,7 +155,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 if (cardFoundCounter === 1 && cardCode) {
                     bot.sendMessage({
                         to: channelID,
-                        message: 'https://netrunnerdb.com/card_image/' + cardCode + '.png'
+                        message: 'https://netrunnerdb.com/card_image/0' + cardCode + '.png'
                     })
                 }else {
                     bot.sendMessage({
